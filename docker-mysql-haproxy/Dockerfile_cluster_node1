@@ -1,0 +1,26 @@
+FROM mysqlclusterbase
+
+ARG CLUSTERDIR="/var/lib/mysql-cluster/"
+ARG NODEID="node1/"
+
+ENV DIR=$CLUSTERDIR
+
+WORKDIR $CLUSTERDIR$NODEID
+WORKDIR /
+
+#RUN mkdir -vp $DIR
+
+COPY ./my.cnf /etc/mysql/my.cnf
+COPY ./cluster.ini $CLUSTERDIR
+COPY ./startmanager.sh /startmanager.sh
+
+RUN apt-get update \
+    && apt-get install -y mysql-cluster-community-management-server \
+    && chmod u+x /startmanager.sh
+
+RUN mysql_upgrade -uroot -pqscft
+
+VOLUME /var/lib/mysql-cluster
+
+CMD ./startmanager.sh $DIR cluster.ini
+#CMD bash
